@@ -16,3 +16,7 @@ class DataValidationError(Exception):
 
 class FileWriteError(Exception):
     """Raise when an output file cannot be written."""
+
+
+class VocabularyError(Exception):
+    """Raise when the tokenizer vocabulary cannot be loaded."""

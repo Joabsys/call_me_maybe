@@ -5,9 +5,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-
-ParameterType = Literal["string", "number", "integer", "boolean"]
-EnumValue = str | int | float | bool
+ParameterType = Literal["string", "number"]
+EnumValue = str | int | float
 
 
 class ParameterDefinition(BaseModel):

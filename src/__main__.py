@@ -1,16 +1,8 @@
-"""Entry point for ``uv run python -m src``."""
 
-import sys
+"""Run the application as a package."""
 
-
-def main() -> int:
-    """Run the program.
-
-    Returns:
-        The process exit code (0 on success).
-    """
-    return 0
+from src.cli import main
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
