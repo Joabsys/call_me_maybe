@@ -5,7 +5,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-ParameterType = Literal["string", "number"]
+ParameterType = Literal["string", "number", "integer"]
+ReturnType = Literal["string", "number", "integer", "boolean"]
 EnumValue = str | int | float
 
 
@@ -25,7 +26,7 @@ class ReturnDefinition(BaseModel):
 
     model_config = ConfigDict(extra="forbid", strict=True)
 
-    type: ParameterType
+    type: ReturnType
 
 
 class FunctionDefinition(BaseModel):

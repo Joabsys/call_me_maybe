@@ -2,15 +2,12 @@
 """Command-line interface for the application."""
 
 import argparse
-import json
 import sys
 from pathlib import Path
 from typing import Sequence
 
 from pydantic import ValidationError
 
-from src.constraints import FunctionCallConstraint
-from src.decoder import generate_tokens
 from src.errors import (
     DataValidationError,
     FileReadError,
@@ -24,8 +21,7 @@ from src.files import (
     write_function_calls,
 )
 from src.llm import LanguageModel
-from src.models import FunctionCall
-from src.prompting import build_prompt
+from src.pipeline import FunctionCallPipeline
 from src.vocabulary import Vocabulary
 
 
@@ -83,47 +79,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             model.get_tokenizer_file_path(),
         )
 
-        constraint = FunctionCallConstraint(
+        pipeline = FunctionCallPipeline(
             definitions,
             model,
             vocabulary,
         )
 
-        function_calls: list[FunctionCall] = []
-
-        for prompt in prompts:
-            prompt_text = build_prompt(
-                prompt.prompt,
-                definitions,
-            )
-
-            generated_token_ids = generate_tokens(
-                prompt_token_ids=model.encode(prompt_text),
-                get_logits=model.get_next_token_logits,
-                get_allowed_tokens=constraint.get_allowed_tokens,
-                stop_token_ids=constraint.end_token_ids,
-                get_forced_tokens=constraint.get_forced_tokens,
-            )
-
-            generated_text = (
-                '{"name": "' + model.decode(generated_token_ids)
-            )
-
-            call_data = json.loads(generated_text)
-
-            if not isinstance(call_data, dict):
-                raise ValueError(
-                    "The generated function call must be a JSON object."
-                )
-
-            function_call = FunctionCall.model_validate(
-                {
-                    "prompt": prompt.prompt,
-                    **call_data,
-                }
-            )
-
-            function_calls.append(function_call)
+        function_calls = [
+            pipeline.generate(prompt.prompt)
+            for prompt in prompts
+        ]
 
         write_function_calls(
             args.output,

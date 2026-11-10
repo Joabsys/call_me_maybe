@@ -18,8 +18,8 @@ clean:
 
 lint:
 	$(UV_RUN) flake8 .
-	$(UV_RUN) mypy . $(MYPY_FLAGS)
+	$(UV_RUN) mypy src $(MYPY_FLAGS)
 
 lint-strict:
 	$(UV_RUN) flake8 .
-	$(UV_RUN) mypy . --strict
+	$(UV_RUN) mypy src --strict

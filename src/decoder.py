@@ -7,6 +7,7 @@ from math import isfinite
 LogitsProvider = Callable[[list[int]], list[float]]
 AllowedTokensProvider = Callable[[list[int]], set[int]]
 ForcedTokensProvider = Callable[[list[int]], list[int]]
+StopCondition = Callable[[list[int]], bool]
 
 
 def mask_invalid_logits(
@@ -45,14 +46,18 @@ def generate_tokens(
     stop_token_ids: set[int],
     max_new_tokens: int = 256,
     get_forced_tokens: ForcedTokensProvider | None = None,
+    initial_token_ids: list[int] | None = None,
+    should_stop: StopCondition | None = None
 ) -> list[int]:
     """Generate tokens while restricting or automatically inserting IDs."""
     if max_new_tokens < 1:
         raise ValueError("The maximum number of new tokens must be positive.")
 
-    generated_token_ids: list[int] = []
+    generated_token_ids: list[int] = list(initial_token_ids or [])
 
     while len(generated_token_ids) < max_new_tokens:
+        if should_stop is not None and should_stop(generated_token_ids):
+            return generated_token_ids
         if get_forced_tokens is not None:
             forced_token_ids = get_forced_tokens(generated_token_ids)
 
