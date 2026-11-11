@@ -1,13 +1,13 @@
 UV_RUN ?= uv run
+UV_SY ?= uv sync
 
 MYPY_FLAGS = --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 .PHONY: install run debug clean lint lint-strict
 
-install:
-	uv sync
 
 run:
+	$(UV_SY)
 	$(UV_RUN) python -m src
 
 debug:

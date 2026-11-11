@@ -148,6 +148,34 @@ class FunctionCallConstraint:
             return []
         return token_ids
 
+    def _forced_continuation(self, current: bytes) -> bytes:
+        """Return the bytes that are the only valid way to continue."""
+        forced = bytearray()
+
+        while True:
+            valid_bytes: list[int] = []
+
+            for byte in range(256):
+                candidate = current + bytes(forced) + bytes([byte])
+
+                if self._parse(candidate):
+                    valid_bytes.append(byte)
+
+                    if len(valid_bytes) > 1:
+                        break
+
+            if len(valid_bytes) != 1:
+                return self._leave_string_start_to_model(bytes(forced))
+
+            forced.append(valid_bytes[0])
+
+    @staticmethod
+    def _leave_string_start_to_model(forced: bytes) -> bytes:
+        """Drop the space and opening quote that start a string value."""
+        if forced.endswith(b' "'):
+            return forced[:-2]
+        return forced
+
     def _get_parser(self, data: bytes) -> _SchemaParser | None:
         """Return the schema parser for the identified function."""
         for name, raw_name in self.name_bytes.items():
@@ -192,11 +220,19 @@ class FunctionCallConstraint:
             name_and_quote = raw_name + b'"'
             if not current.startswith(name_and_quote):
                 continue
+
             bridge_prefix = current[len(name_and_quote):]
+
             if not self.bridge_bytes.startswith(bridge_prefix):
                 return []
+
+            if len(bridge_prefix) < len(self.bridge_bytes):
+                return self._encode_exact(
+                    self.bridge_bytes[len(bridge_prefix):]
+                )
+
             return self._encode_exact(
-                self.bridge_bytes[len(bridge_prefix):]
+                self._forced_continuation(current)
             )
 
         candidates = [

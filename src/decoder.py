@@ -72,9 +72,22 @@ def generate_tokens(
                 generated_token_ids.extend(forced_token_ids)
                 continue
 
+        allowed_ids = get_allowed_tokens(generated_token_ids)
+
+        if not allowed_ids:
+            raise ValueError("At least one token must be allowed.")
+
+        if len(allowed_ids) == 1:
+            next_token_id = next(iter(allowed_ids))
+
+            if next_token_id in stop_token_ids:
+                return generated_token_ids
+
+            generated_token_ids.append(next_token_id)
+            continue
+
         context = prompt_token_ids + generated_token_ids
         logits = get_logits(context)
-        allowed_ids = get_allowed_tokens(generated_token_ids)
         masked_logits = mask_invalid_logits(logits, allowed_ids)
 
         next_token_id = max(
