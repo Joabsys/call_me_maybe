@@ -5,10 +5,11 @@ MYPY_FLAGS = --warn-return-any --warn-unused-ignores --ignore-missing-imports --
 
 .PHONY: install run debug clean lint lint-strict
 
-
 run:
-	$(UV_SY)
 	$(UV_RUN) python -m src
+
+install:
+	$(UV_SY)
 
 debug:
 	$(UV_RUN) python -m pdb -m src

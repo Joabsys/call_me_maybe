@@ -43,6 +43,10 @@ def load_function_definitions(
         raise DataValidationError(
             f"Expected a JSON list in '{file_path}'."
         )
+    if not data:
+        raise DataValidationError(
+            f"'{file_path}' must define at least one function."
+        )
 
     try:
         return [

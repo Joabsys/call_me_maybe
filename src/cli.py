@@ -106,6 +106,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     ) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 1
+    except Exception as error:  # noqa: BLE001
+        print(f"Unexpected error: {error}", file=sys.stderr)
+        return 1
 
     print("Function-call generation successful.")
     print(f"Function definitions loaded: {len(definitions)}")
